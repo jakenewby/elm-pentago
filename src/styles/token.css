@@ -1,0 +1,19 @@
+.token {
+  border-radius: 50%;
+  width: 80%;
+  height: 80%;
+  position: relative;
+  top: 10%;
+  left: 10%;
+}
+
+.token.token--player-1 {
+  background: white;
+  box-shadow: inset black 3px -3px 20px;
+}
+
+.token.token--player-2 {
+  background: black;
+  background: radial-gradient(circle at 200px 200px, #999999, #000);
+  box-shadow: inset white 0px 0px 6px;
+}

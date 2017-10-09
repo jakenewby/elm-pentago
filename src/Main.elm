@@ -1,6 +1,40 @@
 module Main exposing (..)
 
 import Html exposing (Html, text, div)
+import Html.Attributes exposing (..)
+
+
+cellsDom : List (Html msg)
+cellsDom =
+    List.map cellDom (List.range 1 9)
+
+
+cellDom : Int -> Html msg
+cellDom id =
+    div [ class (cellClass id) ]
+        [ div [ class "token token--player-1" ] []
+        ]
+
+
+cellClass : Int -> String
+cellClass id =
+    "cell cell-" ++ (toString id)
+
+
+sectionsDom : List (Html msg)
+sectionsDom =
+    List.map sectionDom (List.range 1 4)
+
+
+sectionDom : Int -> Html msg
+sectionDom id =
+    div [ class (sectionClass id) ] cellsDom
+
+
+sectionClass : Int -> String
+sectionClass id =
+    "section section-" ++ (toString id)
+
 
 
 ---- MODEL ----
@@ -34,7 +68,7 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [] []
+    div [ class "board" ] sectionsDom
 
 
 

@@ -1,0 +1,19 @@
+.section {
+  background: #880000;
+  border: 1px solid black;
+  border-radius: 25px;
+  height: 300px;
+  width: 300px;
+  margin: 5px;
+  transition: 1s ease-in-out;
+}
+
+.section.section-1,
+.section.section-2 {
+  float: left;
+}
+
+.section.section-3,
+.section.section-4 {
+  float: right;
+}

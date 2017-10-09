@@ -1,3 +1,17 @@
+@import 'styles/board.css';
+@import 'styles/cell.css';
+@import 'styles/section.css';
+@import 'styles/token.css';
+
+html,
+body,
+#root {
+  background: black;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
   font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
   font-size: 30px;
