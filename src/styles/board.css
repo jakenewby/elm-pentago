@@ -4,3 +4,8 @@
   background: #FFF;
   margin: 30px auto;
 }
+
+.board__row {
+  height: 50%;
+  width: 100%;
+}
