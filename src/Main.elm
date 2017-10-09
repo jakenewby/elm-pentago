@@ -1,11 +1,8 @@
 module Main exposing (..)
 
 import Html exposing (Html, button, text, div)
-import Html.Attributes exposing (class)
-
-
--- import Html.Events exposing (onClick)
-
+import Html.Attributes exposing (class, style)
+import Html.Events exposing (onClick)
 import Maybe exposing (..)
 
 
@@ -21,8 +18,7 @@ cellDom cell =
             (.coordinates cell)
     in
         div [ class (cellClass cell) ]
-            [ div [ class "token token--player-1" ] []
-            ]
+            []
 
 
 cellClass : Cell -> String
@@ -54,7 +50,8 @@ sectionsDom sections =
 
 sectionDom : Section -> Html msg
 sectionDom section =
-    div [ class (sectionClass section) ] (cellsDom (.cells section))
+    div [ (class (sectionClass section)), (style [ ( "transform", "rotate(" ++ (toString (.angle section) ++ "deg)") ) ]) ]
+        (cellsDom (.cells section))
 
 
 sectionClass : Section -> String
@@ -99,7 +96,9 @@ updateAngle angle direction =
 
 
 type alias Model =
-    { sections : List Section }
+    { sections : List Section
+    , players : List Player
+    }
 
 
 type alias Section =
@@ -116,7 +115,7 @@ type alias Cell =
 
 
 type alias Token =
-    { player : Player
+    { player : Maybe Player
     }
 
 
@@ -133,7 +132,14 @@ type Direction
 
 init : ( Model, Cmd Msg )
 init =
-    ( { sections = initSections }, Cmd.none )
+    ( { sections = initSections
+      , players =
+            List.map
+                (\ind -> { id = ind, name = "" })
+                (List.range 1 2)
+      }
+    , Cmd.none
+    )
 
 
 
@@ -142,7 +148,11 @@ init =
 
 type Msg
     = NoOp
-    | RotateSection Section Direction
+    | RotateSection (Maybe Section) Direction
+
+
+
+-- | AddToken Cell
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -152,24 +162,75 @@ update msg model =
             ( model, Cmd.none )
 
         RotateSection section direction ->
-            let
-                rotateSection : Section -> Section
-                rotateSection s =
-                    if (.id s) == (.id section) then
-                        { section | angle = updateAngle (.angle section) direction }
-                    else
-                        section
-            in
-                ( { model | sections = List.map rotateSection (.sections model) }, Cmd.none )
+            case section of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just section ->
+                    ( { model
+                        | sections =
+                            List.map
+                                (\s ->
+                                    if (.id s) == (.id section) then
+                                        { section | angle = updateAngle (.angle section) direction }
+                                    else
+                                        s
+                                )
+                                (.sections model)
+                      }
+                    , Cmd.none
+                    )
 
 
 
+-- AddToken cell ->
+--     ( { model
+--         | sections =
+--             (List.map
+--                 (\section ->
+--                     { section
+--                         | cells =
+--                             (List.map
+--                                 (\c ->
+--                                     let
+--                                         player =
+--                                             List.head (.players model)
+--                                     in
+--                                         case player of
+--                                             Nothing ->
+--                                                 c
+--
+--                                             Just player ->
+--                                                 if (.coordinates c) == (.coordinates cell) then
+--                                                     { c | token = { player = player } }
+--                                                 else
+--                                                     c
+--                                 )
+--                                 (.cells section)
+--                             )
+--                     }
+--                 )
+--                 (.sections model)
+--             )
+--       }
+--     , Cmd.none
+--     )
 ---- VIEW ----
 
 
 view : Model -> Html Msg
 view model =
-    div [ class "board" ] (sectionsDom (.sections model))
+    div [ class "site" ]
+        [ div [ class "board" ]
+            (sectionsDom (.sections model))
+        , div
+            [ class "controls" ]
+            [ button
+                [ onClick (RotateSection (List.head (.sections model)) Clockwise)
+                ]
+                [ text "rotate" ]
+            ]
+        ]
 
 
 
