@@ -8,3 +8,39 @@
   margin: 5px;
   transition: 1s ease-in-out;
 }
+
+.rotation-control-group {
+  position: absolute;
+}
+
+.rotation-control-group button {
+  position: relative;
+}
+
+.section-1__rotate-clockwise-btn {
+  top: -50px;
+  left: 50px;
+}
+.section-1__rotate-counterclockwise-btn {
+  left: -50px;
+  top: 50px;
+}
+
+.section-2__rotate-clockwise-btn {
+
+}
+.section-2__rotate-counterclockwise-btn {
+
+}
+.section-3__rotate-clockwise-btn {
+
+}
+.section-3__rotate-counterclockwise-btn {
+
+}
+.section-4__rotate-clockwise-btn {
+
+}
+.section-4__rotate-counterclockwise-btn {
+
+}

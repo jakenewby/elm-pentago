@@ -9,7 +9,7 @@
 
 .token.token--player-1 {
   background: white;
-  box-shadow: inset black 3px -3px 20px;
+  box-shadow: inset black 0px 0px 20px;
 }
 
 .token.token--player-2 {
