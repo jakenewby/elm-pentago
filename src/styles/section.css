@@ -9,15 +9,15 @@
   transition: 1s ease-in-out;
 }
 
-.rotation-control-group {
+/* .rotation-control-group {
   position: absolute;
 }
 
 .rotation-control-group button {
   position: relative;
-}
+} */
 
-.section-1__rotate-clockwise-btn {
+/* .section-1__rotate-clockwise-btn {
   top: -50px;
   left: 50px;
 }
@@ -27,10 +27,12 @@
 }
 
 .section-2__rotate-clockwise-btn {
-
+  right: 50px;
+  bottom: 50px;
 }
 .section-2__rotate-counterclockwise-btn {
-
+  top: 50px;
+  left: 50px;
 }
 .section-3__rotate-clockwise-btn {
 
@@ -43,4 +45,4 @@
 }
 .section-4__rotate-counterclockwise-btn {
 
-}
+} */

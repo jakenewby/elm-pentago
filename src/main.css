@@ -24,3 +24,15 @@ img {
   margin: 20px 0;
   max-width: 200px;
 }
+
+.site {
+  display: flex;
+  justify-content: center;
+  padding: 50px;
+}
+
+.rotation-controls {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+}

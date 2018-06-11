@@ -1,136 +1,124 @@
 module Main exposing (..)
 
-import Html exposing (Html, button, text, div)
+import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
 import Maybe exposing (..)
 
 
-cellsDom : Model -> List Cell -> List (Html Msg)
-cellsDom model cells =
-    List.map (cellDom model) cells
+cells : Model -> List Cell -> List (Html Msg)
+cells model cells =
+    List.map (cell model) cells
 
 
-cellDom : Model -> Cell -> Html Msg
-cellDom model cell =
+cell : Model -> Cell -> Html Msg
+cell model cell =
     let
         token =
-            (.token cell)
+            .token cell
 
         ( sectionId, cellId ) =
-            (.coordinates cell)
+            .coordinates cell
     in
-        case token of
-            Just token ->
-                div
-                    [ class (cellClass cell)
-                    ]
-                    [ div
-                        [ class ("token token--player-" ++ (toString (.playerId token)))
-                        ]
-                        []
-                    ]
-
-            _ ->
-                div
-                    [ class (cellClass cell)
-                    , (onClick (AddToken cell))
+    case token of
+        Just token ->
+            div
+                [ class (cellClass cell)
+                ]
+                [ div
+                    [ class ("token token--player-" ++ toString (.playerId token))
                     ]
                     []
+                ]
+
+        _ ->
+            div
+                [ class (cellClass cell)
+                , onClick (AddToken cell)
+                ]
+                []
 
 
 cellClass : Cell -> String
 cellClass cell =
     let
         ( sectionId, cellId ) =
-            (.coordinates cell)
+            cell.coordinates
     in
-        "cell cell-" ++ (toString cellId)
+    "cell cell-" ++ toString cellId
 
 
-sectionsDom : Model -> List (Html Msg)
-sectionsDom model =
+sections : Model -> List (Html Msg)
+sections model =
     let
         topRow =
-            List.take 2 (.sections model)
+            List.take 2 model.sections
 
         bottomRow =
-            List.drop 2 (.sections model)
+            List.drop 2 model.sections
     in
-        [ (div [ class "board__row" ]
-            (List.concat
-                [ (List.map
-                    (sectionDom model)
-                    topRow
-                  )
-                , (List.map
-                    rotationControls
-                    topRow
-                  )
-                ]
-            )
-          )
-        , (div
-            [ class "board__row" ]
-            (List.concat
-                [ (List.map
-                    (sectionDom model)
-                    bottomRow
-                  )
-                , (List.map
-                    rotationControls
-                    bottomRow
-                  )
-                ]
-            )
-          )
-        ]
+    [ div [ class "board__row" ]
+        (List.concat
+            [ List.map
+                (section model)
+                topRow
+            ]
+        )
+    , div
+        [ class "board__row" ]
+        (List.concat
+            [ List.map
+                (section model)
+                bottomRow
+            ]
+        )
+    ]
+
+
+section : Model -> Section -> Html Msg
+section model section =
+    let
+        sectionCells =
+            getCellsForSection model.cells section
+    in
+    div
+        [ class (sectionClass section), style [ ( "transform", "rotate(" ++ (toString section.angle ++ "deg)") ) ] ]
+        (cells model sectionCells)
+
+
+sectionClass : Section -> String
+sectionClass section =
+    "section section-" ++ toString section.id
 
 
 getCellsForSection : List Cell -> Section -> List Cell
 getCellsForSection cells section =
-    List.filter (\cell -> (getCellSectionId cell) == (.id section)) cells
+    List.filter (\cell -> getCellSectionId cell == section.id) cells
 
 
 getCellSectionId : Cell -> Int
 getCellSectionId cell =
     let
         ( sectionId, _ ) =
-            (.coordinates cell)
+            cell.coordinates
     in
-        sectionId
+    sectionId
 
 
 rotationControls : Section -> Html Msg
 rotationControls section =
-    div [ class "rotation-control-group" ]
+    div [ class ("rotation-control-group rotation-control-group--section-" ++ toString (.id section)) ]
         [ button
-            [ (class ("section-" ++ (toString (.id section)) ++ "__rotate-clockwise-btn"))
-            , (onClick (RotateSection section Clockwise))
+            [ class ("section-" ++ toString (.id section) ++ "__rotate-clockwise-btn")
+            , onClick (RotateSection section Clockwise)
             ]
-            []
+            [ text ("S" ++ toString section.id ++ "CW") ]
         , button
-            [ (class ("section-" ++ (toString (.id section)) ++ "__rotate-counterclockwise-btn"))
-            , (onClick (RotateSection section CounterClockwise))
+            [ class ("section-" ++ toString (.id section) ++ "__rotate-counterclockwise-btn")
+            , onClick (RotateSection section CounterClockwise)
             ]
-            []
+            [ text ("S" ++ toString section.id ++ "CCW") ]
         ]
-
-
-sectionDom : Model -> Section -> Html Msg
-sectionDom model section =
-    let
-        sectionCells =
-            (getCellsForSection (.cells model) section)
-    in
-        div
-            [ (class (sectionClass section)), (style [ ( "transform", "rotate(" ++ (toString (.angle section) ++ "deg)") ) ]) ]
-            (cellsDom model sectionCells)
-
-
-sectionClass : Section -> String
-sectionClass section =
-    "section section-" ++ (toString (.id section))
 
 
 initSections : List Section
@@ -145,7 +133,7 @@ initSection id =
 
 initSectionCells : Section -> List Cell
 initSectionCells section =
-    List.map (initSectionCell (.id section)) (List.range 1 9)
+    List.map (initSectionCell section.id) (List.range 1 9)
 
 
 initSectionCell : Int -> Int -> Cell
@@ -205,21 +193,21 @@ type Direction
     | CounterClockwise
 
 
-init : ( Model, Cmd Msg )
-init =
+initModel : ( Model, Cmd Msg )
+initModel =
     let
         sections =
             initSections
     in
-        ( { sections = sections
-          , players = [ (Player 1 ""), (Player 2 "") ]
-          , cells = List.concatMap (initSectionCells) sections
-          , currentPlayerId = 1
-          , placedToken = False
-          , winningPlayerId = Nothing
-          }
-        , Cmd.none
-        )
+    ( { sections = sections
+      , players = [ Player 1 "", Player 2 "" ]
+      , cells = List.concatMap initSectionCells sections
+      , currentPlayerId = 1
+      , placedToken = False
+      , winningPlayerId = Nothing
+      }
+    , Cmd.none
+    )
 
 
 
@@ -242,7 +230,7 @@ update msg model =
         RotateSection section direction ->
             let
                 newPlayerId =
-                    case (.currentPlayerId model) of
+                    case model.currentPlayerId of
                         1 ->
                             2
 
@@ -252,49 +240,48 @@ update msg model =
                         _ ->
                             1
             in
-                if (.placedToken model) then
-                    ( { model
-                        | sections =
-                            (List.map
-                                (\s ->
-                                    if (.id s) == (.id section) then
-                                        { section
-                                            | angle = (updateAngle (.angle section) direction)
-                                        }
-                                    else
-                                        s
-                                )
-                                (.sections model)
+            if model.placedToken then
+                ( { model
+                    | sections =
+                        List.map
+                            (\s ->
+                                if s.id == section.id then
+                                    { section
+                                        | angle = updateAngle section.angle direction
+                                    }
+                                else
+                                    s
                             )
-                        , currentPlayerId = newPlayerId
-                        , placedToken = False
-                      }
-                    , Cmd.none
-                    )
-                else
-                    ( model, Cmd.none )
+                            model.sections
+                    , currentPlayerId = newPlayerId
+                    , placedToken = False
+                  }
+                , Cmd.none
+                )
+            else
+                ( model, Cmd.none )
 
         AddToken cell ->
             let
                 setToken : Cell -> Cell -> Cell
                 setToken c1 c2 =
-                    if (.coordinates c1) == (.coordinates c2) then
-                        Cell (.coordinates c2) (Just (Token (.currentPlayerId model)))
+                    if c1.coordinates == c2.coordinates then
+                        Cell c2.coordinates (Just (Token model.currentPlayerId))
                     else
                         c2
             in
-                if not (.placedToken model) then
-                    ( { model
-                        | cells = (List.map (setToken cell) (.cells model))
-                        , placedToken = True
-                      }
-                    , Cmd.none
-                    )
-                else
-                    ( model, Cmd.none )
+            if not model.placedToken then
+                ( { model
+                    | cells = List.map (setToken cell) model.cells
+                    , placedToken = True
+                  }
+                , Cmd.none
+                )
+            else
+                ( model, Cmd.none )
 
         ClearBoard ->
-            init
+            initModel
 
 
 
@@ -304,8 +291,10 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div [ class "site" ]
-        [ div [ class "board" ]
-            (sectionsDom model)
+        [ div [ class "rotation-controls" ] (List.map rotationControls (List.filter (\s -> not (s.id % 2 == 0)) model.sections))
+        , div [ class "board" ]
+            (sections model)
+        , div [ class "rotation-controls" ] (List.map rotationControls (List.filter (\s -> s.id % 2 == 0) model.sections))
         ]
 
 
@@ -317,7 +306,7 @@ main : Program Never Model Msg
 main =
     Html.program
         { view = view
-        , init = init
+        , init = initModel
         , update = update
         , subscriptions = always Sub.none
         }
