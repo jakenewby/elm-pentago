@@ -1,9 +1,11 @@
-module Main exposing (..)
+module Main exposing (Cell, Direction(..), Model, Msg(..), Player, Quadrant, Token, XYCoordinatePair, cellClass, getWinner, initCell, initCells, initModel, initQuadrant, initQuadrants, main, quadrantClass, rotateCells, rotationControls, update, updateAngle, view, viewCell, viewCells, viewQuadrant, viewQuadrants)
 
+import Browser exposing (..)
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
 import Maybe exposing (..)
+
 
 
 -- to check win conditions:
@@ -132,20 +134,18 @@ type Direction
     | CounterClockwise
 
 
-initModel : ( Model, Cmd Msg )
+initModel : Model
 initModel =
     let
         quadrants =
             initQuadrants
     in
-    ( { quadrants = quadrants
-      , players = [ Player 1 "", Player 2 "" ]
-      , currentPlayerId = 1
-      , didPlaceToken = False
-      , winningPlayerId = Nothing
-      }
-    , Cmd.none
-    )
+    { quadrants = quadrants
+    , players = [ Player 1 "", Player 2 "" ]
+    , currentPlayerId = 1
+    , didPlaceToken = False
+    , winningPlayerId = Nothing
+    }
 
 
 
@@ -171,6 +171,7 @@ getWinner model =
     -- not possible to win in less than 9 moves
     if numTokensPlaced < 9 then
         Nothing
+
     else
         -- find the winner
         Nothing
@@ -233,11 +234,11 @@ type Msg
     | ClearBoard
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> Model
 update msg model =
     case msg of
         NoOp ->
-            ( model, Cmd.none )
+            model
 
         RotateQuadrant quadrant direction ->
             let
@@ -262,6 +263,7 @@ update msg model =
                                     | angle = updateAngle quadrant.angle direction
                                     , cells = rotateCells quadrant.cells direction
                                 }
+
                             else
                                 q
                         )
@@ -275,22 +277,21 @@ update msg model =
                             getWinner model
                     in
                     case winner of
-                        Just winner ->
-                            winner.id == model.currentPlayerId
+                        Just player ->
+                            player.id == model.currentPlayerId
 
                         Nothing ->
                             False
             in
             if model.didPlaceToken then
-                ( { model
+                { model
                     | quadrants = newQuadrants
                     , currentPlayerId = newPlayerId
                     , didPlaceToken = False
-                  }
-                , Cmd.none
-                )
+                }
+
             else
-                ( model, Cmd.none )
+                model
 
         AddToken quadrant cell ->
             let
@@ -298,6 +299,7 @@ update msg model =
                 setToken c1 c2 =
                     if c1.coordinates == c2.coordinates then
                         Cell c2.coordinates (Just (Token model.currentPlayerId))
+
                     else
                         c2
 
@@ -309,8 +311,8 @@ update msg model =
                             getWinner model
                     in
                     case winner of
-                        Just winner ->
-                            winner.id == model.currentPlayerId
+                        Just player ->
+                            player.id == model.currentPlayerId
 
                         Nothing ->
                             False
@@ -325,6 +327,7 @@ update msg model =
                         (\q ->
                             if q.id == quadrant.id then
                                 { quadrant | cells = newCells }
+
                             else
                                 q
                         )
@@ -332,22 +335,20 @@ update msg model =
             in
             if not model.didPlaceToken then
                 if didCurrentPlayerWin then
-                    ( { model
+                    { model
                         | quadrants = newQuadrants
                         , didPlaceToken = True
                         , winningPlayerId = Just model.currentPlayerId
-                      }
-                    , Cmd.none
-                    )
+                    }
+
                 else
-                    ( { model
+                    { model
                         | quadrants = newQuadrants
                         , didPlaceToken = True
-                      }
-                    , Cmd.none
-                    )
+                    }
+
             else
-                ( model, Cmd.none )
+                model
 
         ClearBoard ->
             initModel
@@ -357,24 +358,20 @@ update msg model =
 ---- VIEW ----
 
 
-cells : Quadrant -> List (Html Msg)
-cells quadrant =
-    List.map (cell quadrant) quadrant.cells
+viewCells : Quadrant -> List (Html Msg)
+viewCells quadrant =
+    List.map (viewCell quadrant) quadrant.cells
 
 
-cell : Quadrant -> Cell -> Html Msg
-cell quadrant cell =
-    let
-        token =
-            .token cell
-    in
-    case token of
+viewCell : Quadrant -> Cell -> Html Msg
+viewCell quadrant cell =
+    case cell.token of
         Just token ->
             div
                 [ class (cellClass cell)
                 ]
                 [ div
-                    [ class ("token token--player-" ++ toString (.playerId token))
+                    [ class ("token token--player-" ++ String.fromInt (.playerId token))
                     ]
                     []
                 ]
@@ -393,11 +390,11 @@ cellClass cell =
         ( quadrantId, cellId ) =
             cell.coordinates
     in
-    "cell cell-" ++ toString cellId
+    "cell cell-" ++ String.fromInt cellId
 
 
-quadrants : Model -> List (Html Msg)
-quadrants model =
+viewQuadrants : Model -> List (Html Msg)
+viewQuadrants model =
     let
         topRow =
             List.take 2 model.quadrants
@@ -408,7 +405,7 @@ quadrants model =
     [ div [ class "board__row" ]
         (List.concat
             [ List.map
-                (quadrant model)
+                (viewQuadrant model)
                 topRow
             ]
         )
@@ -416,48 +413,48 @@ quadrants model =
         [ class "board__row" ]
         (List.concat
             [ List.map
-                (quadrant model)
+                (viewQuadrant model)
                 bottomRow
             ]
         )
     ]
 
 
-quadrant : Model -> Quadrant -> Html Msg
-quadrant model quadrant =
+viewQuadrant : Model -> Quadrant -> Html Msg
+viewQuadrant model quadrant =
     div
-        [ class (quadrantClass quadrant), style [ ( "transform", "rotate(" ++ (toString quadrant.angle ++ "deg)") ) ] ]
-        (cells quadrant)
+        [ class (quadrantClass quadrant), style "transform" ("rotate(" ++ (String.fromInt quadrant.angle ++ "deg)")) ]
+        (viewCells quadrant)
 
 
 quadrantClass : Quadrant -> String
 quadrantClass quadrant =
-    "quadrant quadrant-" ++ toString quadrant.id
+    "quadrant quadrant-" ++ String.fromInt quadrant.id
 
 
 rotationControls : Quadrant -> Html Msg
 rotationControls quadrant =
-    div [ class ("rotation-control-group rotation-control-group--quadrant-" ++ toString (.id quadrant)) ]
+    div [ class ("rotation-control-group rotation-control-group--quadrant-" ++ String.fromInt (.id quadrant)) ]
         [ button
-            [ class ("quadrant-" ++ toString (.id quadrant) ++ "__rotate-clockwise-btn")
+            [ class ("quadrant-" ++ String.fromInt (.id quadrant) ++ "__rotate-clockwise-btn")
             , onClick (RotateQuadrant quadrant Clockwise)
             ]
-            [ text ("S" ++ toString quadrant.id ++ "CW") ]
+            [ text ("S" ++ String.fromInt quadrant.id ++ "CW") ]
         , button
-            [ class ("quadrant-" ++ toString (.id quadrant) ++ "__rotate-counterclockwise-btn")
+            [ class ("quadrant-" ++ String.fromInt (.id quadrant) ++ "__rotate-counterclockwise-btn")
             , onClick (RotateQuadrant quadrant CounterClockwise)
             ]
-            [ text ("S" ++ toString quadrant.id ++ "CCW") ]
+            [ text ("S" ++ String.fromInt quadrant.id ++ "CCW") ]
         ]
 
 
 view : Model -> Html Msg
 view model =
     div [ class "site" ]
-        [ div [ class "rotation-controls" ] (List.map rotationControls (List.filter (\q -> not (q.id % 2 == 0)) model.quadrants))
+        [ div [ class "rotation-controls" ] (List.map rotationControls (List.filter (\q -> not (modBy 2 q.id == 0)) model.quadrants))
         , div [ class "board" ]
-            (quadrants model)
-        , div [ class "rotation-controls" ] (List.map rotationControls (List.filter (\q -> q.id % 2 == 0) model.quadrants))
+            (viewQuadrants model)
+        , div [ class "rotation-controls" ] (List.map rotationControls (List.filter (\q -> modBy 2 q.id == 0) model.quadrants))
         ]
 
 
@@ -465,11 +462,10 @@ view model =
 ---- PROGRAM ----
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Html.program
-        { view = view
-        , init = initModel
+    Browser.sandbox
+        { init = initModel
+        , view = view
         , update = update
-        , subscriptions = always Sub.none
         }

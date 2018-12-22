@@ -1,8 +1,8 @@
 /* eslint-env node */
 import './main.css';
-import { Main } from './Main.elm';
+import { Elm } from './Main.elm';
 import registerServiceWorker from './registerServiceWorker';
 
-Main.embed(document.getElementById('root'));
+Elm.Main.init({ node: document.getElementById('root') });
 
 registerServiceWorker();

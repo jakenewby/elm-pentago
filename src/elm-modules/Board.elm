@@ -1,8 +1,9 @@
-module Board exposing (..)
+module Board exposing (Model, Msg(..), init, main, update, view)
 
-import Section
-import Html exposing (Html, text, div)
+import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, classList)
+import Section
+
 
 
 ---- MODEL ----

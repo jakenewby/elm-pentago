@@ -1,8 +1,9 @@
-module Section exposing (..)
+module Section exposing (Model, Msg(..), init, main, update, view)
 
 import Cell
-import Html exposing (Html, text, div)
+import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, classList)
+
 
 
 ---- MODEL ----
@@ -36,7 +37,7 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [ class ("section section-" ++ (toString (.sectionId model))) ]
+    div [ class ("section section-" ++ toString (.sectionId model)) ]
         (map Cell (range 1 9))
 
 

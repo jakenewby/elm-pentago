@@ -1,7 +1,8 @@
-module Cell exposing (..)
+module Cell exposing (Model, Msg(..), init, main, update, view)
 
-import Html exposing (Html, text, div)
+import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, classList)
+
 
 
 ---- MODEL ----
@@ -35,7 +36,7 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [ class ("cell cell-" ++ (toString (.cellId model))) ] []
+    div [ class ("cell cell-" ++ toString (.cellId model)) ] []
 
 
 
