@@ -1,4 +1,4 @@
-module Main exposing (Cell, Direction(..), Model, Msg(..), Player, Quadrant, Token, XYCoordinatePair, cellClass, getWinner, initCell, initCells, initModel, initQuadrant, initQuadrants, main, quadrantClass, rotateCells, rotationControls, update, updateAngle, view, viewCell, viewCells, viewQuadrant, viewQuadrants)
+module Main exposing (Cell, Direction(..), Model, Msg(..), Player, Quadrant, Token, XYCoordinatePair, cellClass, classForQuadrant, getWinner, initCell, initCells, initModel, initQuadrant, initQuadrants, main, rotateCells, rotationControls, update, updateAngle, view, viewCell, viewCells, viewQuadrant, viewQuadrants)
 
 import Browser exposing (..)
 import Html exposing (Html, button, div, text)
@@ -8,56 +8,6 @@ import Maybe exposing (..)
 
 
 
--- to check win conditions:
---
--- let quadrant in quadrants
---   if quadrant 1
---     if diagonal (1,1) && (2,2) && (3,3)
---       check quadrant 4 (1,1) && (2,2)
---     else if cheesy diagonals (2 of them)
---       ...
---     else if any horizontal
---       check quadrant 2 cells with same x, y == 1 && y == 2
---     else if any vertical
---       check quadrant 3 cells with x == 1 && x == 2, same y
---     else
---       Continue Playing
---
---   else if quadrant 2
---     if diagonal (1,3) && (2,2) && (3,1)
---       check quadrant 3 (1,3) && (2,2)
---     else if cheesy diagonals (2 of them)
---       ...
---     else if any horizontal
---       check quadrant 1 cells with same x, y == 3 && y == 2
---     else if any vertical
---       check quadrant 4 cells with x == 1 && x == 2, same y
---     else
---       Continue Playing
---
---   else if quadrant 3
---     if diagonal (3,1) && (2,2) && (1,3)
---       check quadrant 2 (3,1) && (2,2)
---     else if cheesy diagonals (2 of them)
---       ...
---     else if any horizontal
---       check quadrant 4 cells with same x, y == 1 && y == 2
---     else if any vertical
---       check quadrant 1 cells with x == 3 && x == 2, same y
---     else
---       Continue Playing
---
---   else if quadrant 4
---     if diagonal (3,3) && (2,2) && (1,1)
---       check quadrant 1 (3,3) && (2,2)
---     else if cheesy diagonals (2 of them)
---       ...
---     else if any horizontal
---       check quadrant 3 cells with same x, y == 3 && y == 2
---     else if any vertical
---       check quadrant 2 cells with x == 3 && x == 2, same y
---     else
---       Continue Playing
 ---- MODEL ----
 
 
@@ -396,17 +346,19 @@ cellClass cell =
 viewQuadrants : Model -> List (Html Msg)
 viewQuadrants model =
     let
-        topRow =
+        topRowQuadrants : List Quadrant
+        topRowQuadrants =
             List.take 2 model.quadrants
 
-        bottomRow =
+        bottomRowQuadrants : List Quadrant
+        bottomRowQuadrants =
             List.drop 2 model.quadrants
     in
     [ div [ class "board__row" ]
         (List.concat
             [ List.map
                 (viewQuadrant model)
-                topRow
+                topRowQuadrants
             ]
         )
     , div
@@ -414,7 +366,7 @@ viewQuadrants model =
         (List.concat
             [ List.map
                 (viewQuadrant model)
-                bottomRow
+                bottomRowQuadrants
             ]
         )
     ]
@@ -422,29 +374,41 @@ viewQuadrants model =
 
 viewQuadrant : Model -> Quadrant -> Html Msg
 viewQuadrant model quadrant =
+    let
+        quadrantRotation : String
+        quadrantRotation =
+            "rotate(" ++ String.fromInt quadrant.angle ++ "deg)"
+    in
     div
-        [ class (quadrantClass quadrant), style "transform" ("rotate(" ++ (String.fromInt quadrant.angle ++ "deg)")) ]
+        [ class ("quadrant " ++ classForQuadrant quadrant), style "transform" quadrantRotation ]
         (viewCells quadrant)
 
 
-quadrantClass : Quadrant -> String
-quadrantClass quadrant =
-    "quadrant quadrant-" ++ String.fromInt quadrant.id
+classForQuadrant : Quadrant -> String
+classForQuadrant quadrant =
+    "quadrant-" ++ String.fromInt quadrant.id
 
 
 rotationControls : Quadrant -> Html Msg
 rotationControls quadrant =
-    div [ class ("rotation-control-group rotation-control-group--quadrant-" ++ String.fromInt (.id quadrant)) ]
+    let
+        quadrantClass =
+            classForQuadrant quadrant
+
+        quadrantIdString =
+            String.fromInt quadrant.id
+    in
+    div [ class ("rotation-control-group rotation-control-group--" ++ quadrantClass) ]
         [ button
-            [ class ("quadrant-" ++ String.fromInt (.id quadrant) ++ "__rotate-clockwise-btn")
+            [ class (quadrantClass ++ "__rotate-clockwise-btn")
             , onClick (RotateQuadrant quadrant Clockwise)
             ]
-            [ text ("S" ++ String.fromInt quadrant.id ++ "CW") ]
+            [ text ("S" ++ quadrantIdString ++ "CW") ]
         , button
-            [ class ("quadrant-" ++ String.fromInt (.id quadrant) ++ "__rotate-counterclockwise-btn")
+            [ class (quadrantClass ++ "__rotate-counterclockwise-btn")
             , onClick (RotateQuadrant quadrant CounterClockwise)
             ]
-            [ text ("S" ++ String.fromInt quadrant.id ++ "CCW") ]
+            [ text ("S" ++ quadrantIdString ++ "CCW") ]
         ]
 
 
